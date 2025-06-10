@@ -5,6 +5,7 @@ import {
   getEducation,
   getExperiences,
   getReferences,
+  type Education,
 } from "./content"
 import fs from "fs"
 import path from "path"
@@ -348,7 +349,7 @@ ${project.content.replace(/<[^>]*>/g, '').trim()}
 `).join('\n') : ''
 
     // Format education
-    const educationFormatted = education?.sections ? education.sections.map(section => `
+    const educationFormatted = education?.sections ? education.sections.map((section: Education['sections'][0]) => `
 **${section.title}**
 ${section.content.replace(/<[^>]*>/g, '').trim()}
 `).join('\n') : ''
