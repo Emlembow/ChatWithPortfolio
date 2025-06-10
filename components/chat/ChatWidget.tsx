@@ -418,7 +418,7 @@ export default function ChatWidget() {
       <div className="flex flex-col h-full">
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-slate-700 bg-blue-600">
-          <h3 className="font-semibold text-white">Alex Jordan's AI Assistant</h3>
+          <h3 className="font-semibold text-white">Alex Jordan&apos;s AI Assistant</h3>
           <div className="flex gap-2">
             {toggleSplitView && (
               <button
@@ -440,7 +440,7 @@ export default function ChatWidget() {
           <div className="p-4 overflow-y-auto flex-grow">
             {messages.length === 0 ? (
               <div className="text-center text-slate-400 mt-8">
-                <p>Hi, I'm Alex Jordan's AI assistant. How can I help you today?</p>
+                <p>Hi, I&apos;m Alex Jordan&apos;s AI assistant. How can I help you today?</p>
               </div>
             ) : (
               messages.map((message) => (
@@ -588,7 +588,7 @@ export default function ChatWidget() {
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-slate-700 bg-blue-600">
           <h3 id="chat-heading" className="font-semibold text-white">
-            Alex Jordan's AI Assistant
+            Alex Jordan&apos;s AI Assistant
           </h3>
           <div className="flex gap-2">
             {toggleSplitView && !isMobileView && (
@@ -624,7 +624,7 @@ export default function ChatWidget() {
           >
             {messages.length === 0 ? (
               <div className="text-center text-slate-400 mt-8">
-                <p>Hi, I'm Alex Jordan's AI assistant. How can I help you today?</p>
+                <p>Hi, I&apos;m Alex Jordan&apos;s AI assistant. How can I help you today?</p>
               </div>
             ) : (
               messages.map((message) => (

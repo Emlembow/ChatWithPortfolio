@@ -54,7 +54,7 @@ export default function SimpleArticleLink() {
           className="rounded-lg border-2 border-slate-200/10 mb-6"
         />
 
-        <h3 className="text-xl font-bold text-slate-200 mb-2">Neural Interface Certification: A PM's Guide</h3>
+        <h3 className="text-xl font-bold text-slate-200 mb-2">Neural Interface Certification: A PM&apos;s Guide</h3>
 
         <div className="text-sm text-slate-400 mb-4">January 2024 • Blog Post</div>
 

@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { useState, useEffect, useRef, type ReactNode } from "react"
+import { useState, useEffect, useRef, useCallback, type ReactNode } from "react"
 import { GripVertical } from "lucide-react"
 
 interface SplitLayoutProps {
@@ -23,9 +23,9 @@ export default function SplitLayout({ chat, main }: SplitLayoutProps) {
   const initialWidth = useRef<number>(0)
 
   // Toggle split view mode
-  const toggleSplitView = () => {
-    setIsSplitView(!isSplitView)
-  }
+  const toggleSplitView = useCallback(() => {
+    setIsSplitView(prev => !prev)
+  }, [])
 
   // Start dragging the divider
   const startDrag = (e: React.MouseEvent) => {
@@ -125,7 +125,7 @@ export default function SplitLayout({ chat, main }: SplitLayoutProps) {
     }
 
     return undefined
-  }, [isSplitView, isNarrow])
+  }, [isSplitView, isNarrow, toggleSplitView])
 
   // Clone the main content and inject the isContainerNarrow prop
   const enhancedMain = React.isValidElement(main) ? React.cloneElement(main, { isContainerNarrow: isNarrow } as any) : main

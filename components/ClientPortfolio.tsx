@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
 import { Github, Linkedin, ExternalLink } from "lucide-react"
+import Link from "next/link"
 import DirectWritingSection from "@/app/direct-writing-section"
 import type { Experience, ProfileInfo, AboutContent, Reference, Education } from "@/lib/content"
 import DynamicEducationSection from "@/components/dynamic-education-section"
@@ -71,7 +72,7 @@ export default function ClientPortfolio({ profile, about, experiences, reference
           >
             <div>
               <h1 className="text-4xl font-bold tracking-tight text-slate-200 sm:text-5xl">
-                <a href="/">{profile.name}</a>
+                <Link href="/">{profile.name}</Link>
               </h1>
               <h2 className="mt-3 text-lg font-medium tracking-tight text-slate-200 sm:text-xl">{profile.title}</h2>
               <p className="mt-4 max-w-xs leading-normal">{profile.summary}</p>

@@ -17,7 +17,7 @@ export default function LinkedInArticleLink() {
         className="rounded-lg border-2 border-slate-200/10 transition hover:border-slate-200/30 mb-6"
       />
 
-      <h3 className="text-xl font-bold text-slate-200 mb-2 hover:text-blue-500">Neural Interface Certification: A PM's Guide</h3>
+      <h3 className="text-xl font-bold text-slate-200 mb-2 hover:text-blue-500">Neural Interface Certification: A PM&apos;s Guide</h3>
 
       <div className="text-sm text-slate-400 mb-4">January 2024 • Blog Post</div>
 
