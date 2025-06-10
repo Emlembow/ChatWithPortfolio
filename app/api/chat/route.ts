@@ -29,8 +29,28 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Get system prompt
-    const systemPrompt = await buildSystemPrompt()
+    // Get system prompt with enhanced error handling
+    let systemPrompt: string
+    try {
+      console.log('Attempting to build system prompt...')
+      systemPrompt = await buildSystemPrompt()
+      console.log('System prompt built successfully')
+    } catch (error) {
+      console.error('Failed to build system prompt:', error)
+      return new NextResponse(
+        JSON.stringify({
+          error: "Service temporarily unavailable",
+          details: `Failed to build system prompt: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          debug: process.env.NODE_ENV === 'development' ? {
+            stack: error instanceof Error ? error.stack : 'No stack trace available'
+          } : undefined
+        }),
+        {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
+        },
+      )
+    }
 
     // Initialize OpenAI client
     const openai = new OpenAI({
@@ -79,13 +99,23 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error("Error processing chat request:", error)
+    
+    // Determine if this is a system prompt error or other error
+    const isSystemPromptError = error instanceof Error && error.message.includes('system prompt')
+    const statusCode = isSystemPromptError ? 503 : 500
+    
     return new NextResponse(
       JSON.stringify({
-        error: "Service temporarily unavailable",
+        error: isSystemPromptError ? "Service temporarily unavailable" : "Internal server error",
         details: error instanceof Error ? error.message : "Unknown error",
+        errorType: isSystemPromptError ? "system_prompt_error" : "general_error",
+        debug: process.env.NODE_ENV === 'development' ? {
+          stack: error instanceof Error ? error.stack : 'No stack trace available',
+          timestamp: new Date().toISOString()
+        } : undefined
       }),
       {
-        status: 503,
+        status: statusCode,
         headers: { "Content-Type": "application/json" },
       },
     )
