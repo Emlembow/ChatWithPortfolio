@@ -325,7 +325,7 @@ export const buildSystemPrompt = cache(async (): Promise<string> => {
     }
 
     // Format work experience
-    const workExperience = experiences ? experiences.map((exp, index) => `
+    const workExperience = experiences && Array.isArray(experiences) ? experiences.map((exp, index) => `
 ### ${index + 1}. ${exp.title} at ${exp.company}
 - **Duration**: ${exp.startDate} to ${exp.endDate}
 - **Location**: ${exp.location}
@@ -337,7 +337,7 @@ ${exp.description.replace(/<[^>]*>/g, '').trim()}
 `).join('\n') : ''
 
     // Format projects
-    const projectsFormatted = projects ? projects.map((project, index) => `
+    const projectsFormatted = projects && Array.isArray(projects) ? projects.map((project, index) => `
 ### ${index + 1}. ${project.title}
 - **Type**: ${project.type}
 - **Technologies**: ${project.technologies.join(', ')}
@@ -354,7 +354,7 @@ ${section.content.replace(/<[^>]*>/g, '').trim()}
 `).join('\n') : ''
 
     // Format references
-    const referencesFormatted = references ? references.map((ref, index) => `
+    const referencesFormatted = references && Array.isArray(references) ? references.map((ref, index) => `
 ### ${index + 1}. ${ref.name}
 - **Title**: ${ref.title}
 - **Relationship**: ${ref.relationship}
@@ -366,7 +366,7 @@ ${ref.content.replace(/<[^>]*>/g, '').trim()}
 `).join('\n') : ''
 
     // Format blog posts
-    const blogPostsFormatted = blogPosts ? blogPosts.map((post, index) => `
+    const blogPostsFormatted = blogPosts && Array.isArray(blogPosts) ? blogPosts.map((post, index) => `
 ### ${index + 1}. ${post.title}
 - **Published**: ${post.date}
 - **URL**: ${post.url}
@@ -377,8 +377,8 @@ ${post.content.replace(/<[^>]*>/g, '').slice(0, 500).trim()}...
 
     // Aggregate skills and technologies
     const allTechnologies = [...new Set(
-      (experiences ? experiences.flatMap(exp => exp.technologies) : [])
-        .concat(projects ? projects.flatMap(proj => proj.technologies) : [])
+      (experiences && Array.isArray(experiences) ? experiences.flatMap(exp => exp.technologies) : [])
+        .concat(projects && Array.isArray(projects) ? projects.flatMap(proj => proj.technologies) : [])
     )]
 
     const skillsSummary = `
@@ -392,7 +392,7 @@ ${post.content.replace(/<[^>]*>/g, '').slice(0, 500).trim()}...
 `
 
     // Get current role info (latest experience)
-    const currentRole = experiences && experiences.length > 0 ? experiences[0] : null
+    const currentRole = experiences && Array.isArray(experiences) && experiences.length > 0 ? experiences[0] : null
     const currentRoleInfo = currentRole 
       ? `Currently ${currentRole.title} at ${currentRole.company}. ${currentRole.description.replace(/<[^>]*>/g, '').slice(0, 200).trim()}...`
       : 'Looking for new opportunities in product management.'
