@@ -1,0 +1,581 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+
+    --radius: 0.5rem;
+
+    /* Experience section variables */
+    --text-secondary: #94a3b8;
+    --accent: #3b82f6;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out forwards;
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+/* Ensure the chat widget is visible on all backgrounds */
+.chat-widget-container {
+  isolation: isolate;
+  z-index: 50;
+}
+
+/* Improve focus visibility for accessibility */
+.focus-visible:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Prevent text overflow in chat messages */
+.chat-message {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Ensure smooth transitions */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+/* Divider handle animation */
+@keyframes pulse {
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+
+.divider-handle-active {
+  animation: pulse 1.5s infinite;
+}
+
+/* Improve cursor visibility during drag */
+body.dragging-divider {
+  cursor: col-resize !important;
+}
+
+/* Add this to the end of your globals.css file */
+
+/* Section header styling */
+.section-header {
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.section-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 1px;
+  width: 3rem;
+  background-color: #3b82f6;
+}
+
+.section-header h2 {
+  letter-spacing: 0.05em;
+}
+
+/* Fallback for split view responsive layout */
+@media (max-width: 640px) {
+  .split-container {
+    flex-direction: column !important;
+  }
+
+  .split-container > div {
+    /* every direct child (chat, divider, main) goes full-width */
+    width: 100% !important;
+  }
+
+  .split-container .divider {
+    display: none !important;
+  }
+}
+
+/* Ensure the portfolio stacks on narrow viewports */
+@media (max-width: 768px) {
+  .portfolio-container {
+    flex-direction: column !important;
+  }
+
+  .portfolio-container > header,
+  .portfolio-container > main {
+    width: 100% !important;
+  }
+}
+
+/* Improved markdown content styling for chat messages */
+.markdown-content ul,
+.markdown-content ol {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-content li + li {
+  margin-top: 0.25rem;
+}
+
+.markdown-content li > p {
+  margin-bottom: 0.25rem;
+}
+
+.markdown-content li:last-child > p:last-child {
+  margin-bottom: 0;
+}
+
+/* Ensure proper spacing for nested lists */
+.markdown-content li > ul,
+.markdown-content li > ol {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Improve code block styling */
+.markdown-content pre {
+  margin: 0.75rem 0;
+  padding: 0.75rem;
+  background-color: rgba(30, 41, 59, 0.7);
+  border-radius: 0.375rem;
+  overflow-x: auto;
+}
+
+.markdown-content pre code {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+/* Improve inline code styling */
+.markdown-content code:not(pre code) {
+  background-color: rgba(30, 41, 59, 0.7);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9em;
+}
+
+/* Improve blockquote styling */
+.markdown-content blockquote {
+  border-left: 3px solid #475569;
+  padding-left: 1rem;
+  font-style: italic;
+  margin: 0.75rem 0;
+  color: #94a3b8;
+}
+
+/* Improve table styling */
+.markdown-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.75rem 0;
+}
+
+.markdown-content th,
+.markdown-content td {
+  border: 1px solid #334155;
+  padding: 0.5rem;
+}
+
+.markdown-content th {
+  background-color: #1e293b;
+  font-weight: 600;
+}
+
+.markdown-content tr:nth-child(even) {
+  background-color: rgba(30, 41, 59, 0.3);
+}
+
+/* Improve bold and italic styling */
+.markdown-content strong {
+  color: #e2e8f0;
+  font-weight: 700;
+}
+
+.markdown-content em {
+  color: #e2e8f0;
+  font-style: italic;
+}
+
+/* Experience section styling - updated to use cards */
+.experience-item {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: rgba(30, 41, 59, 0.5);
+  border-radius: 0.5rem;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.experience-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Header flex layout: title on top, dates/location below */
+.experience-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.75rem;
+}
+
+/* Dates & location styling */
+.role-meta {
+  text-align: left;
+  white-space: nowrap;
+  margin-bottom: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .experience-header {
+    /* Remove flex-direction: column since we're already using column layout */
+    align-items: flex-start;
+  }
+  .role-meta {
+    text-align: left;
+    margin-top: 0;
+  }
+}
+
+/* Dates and location styling */
+.role-dates {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  margin-right: 1rem;
+}
+
+.role-location {
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+/* Summary paragraph */
+.role-summary {
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+  color: #94a3b8;
+}
+
+/* Bullet list styling */
+.experience-list {
+  list-style-type: disc;
+  list-style-position: outside;
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+  line-height: 1.6;
+  color: #94a3b8;
+}
+
+/* Add a little breathing room between bullets */
+.experience-list li + li {
+  margin-top: 0.5rem;
+}
+
+/* Bold any numeric metrics */
+.experience-list strong,
+.role-description strong,
+.role-summary strong {
+  font-weight: 600;
+  color: #3b82f6;
+}
+
+/* Technology tags */
+.tech-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+/* Role content spacing */
+.role-content {
+  margin-top: 0.5rem;
+}
+
+/* Ensure proper spacing in role description */
+.role-description > p {
+  margin-bottom: 0.75rem;
+}
+
+.role-description > p:last-child {
+  margin-bottom: 0;
+}
+
+/* Update the role-title styling to make it bigger and more prominent */
+
+.role-title {
+  font-size: 1.5rem; /* Increase from default size */
+  font-weight: 700; /* Make it bolder */
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+  color: #e2e8f0; /* Lighter color for better contrast */
+}
+
+/* Add a hover effect for the link */
+.role-title a:hover {
+  color: #3b82f6; /* Blue color on hover */
+  text-decoration: none;
+}
+
+/* Ensure the company name stands out */
+.role-title a {
+  color: #e2e8f0;
+  transition: color 0.2s ease;
+}
+
+/* References section styling */
+.reference-item {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.reference-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.reference-content p {
+  margin-bottom: 1rem;
+}
+
+.reference-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Education section styling */
+.education-item {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.education-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.education-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.education-content h2:first-child {
+  margin-top: 0;
+}
+
+.education-content ul {
+  list-style-type: disc;
+  list-style-position: outside;
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+  line-height: 1.6;
+  color: #94a3b8;
+}
+
+.education-content li {
+  margin-bottom: 0.5rem;
+}
+
+.education-content p {
+  margin-bottom: 1rem;
+  color: #94a3b8;
+}
+
+.education-content strong {
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+/* Add these styles to the end of your globals.css file */
+
+/* Mobile chat styles */
+@media (max-width: 640px) {
+  /* Prevent scrolling when chat is open */
+  body.chat-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Larger tap targets for mobile */
+  .mobile-tap-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Improved mobile input */
+  .mobile-input {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+    padding: 12px;
+  }
+
+  /* Full-height mobile chat */
+  .mobile-chat-fullscreen {
+    height: 100vh !important;
+    height: -webkit-fill-available !important; /* For iOS Safari */
+    max-height: -webkit-fill-available !important;
+  }
+
+  /* Mobile slide-up animation */
+  @keyframes slide-up-mobile {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slide-up-mobile {
+    animation: slide-up-mobile 0.3s ease-out forwards;
+  }
+
+  /* Safe area insets for notched phones */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+}
+
+/* Keyboard detection helper */
+.keyboard-open .chat-messages {
+  max-height: calc(100vh - 200px); /* Adjust for keyboard */
+}
+
+/* Improved focus states for mobile */
+@media (max-width: 640px) {
+  button:focus,
+  input:focus {
+    outline: none;
+  }
+
+  button:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Add this to the end of your globals.css file */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes chat-bubble {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.02) translateY(-3px);
+  }
+  85% {
+    transform: scale(0.99) translateY(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-chat-bubble {
+  animation: chat-bubble 0.6s ease-out forwards;
+}
