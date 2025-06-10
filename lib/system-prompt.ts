@@ -121,29 +121,51 @@ const buildSystemPromptFromTemplate = async (templateContent: string, data: {
 // System prompt builder function
 export const buildSystemPrompt = cache(async (): Promise<string> => {
   try {
+    console.log('Starting system prompt build process...')
+    
     // Read the main template file
     const templatePath = path.join(process.cwd(), 'content/system-prompt.md')
-    const templateContent = fs.readFileSync(templatePath, 'utf8')
+    console.log(`Reading main template from: ${templatePath}`)
+    
+    let templateContent: string
+    try {
+      templateContent = fs.readFileSync(templatePath, 'utf8')
+      console.log(`Successfully read main template (${templateContent.length} characters)`)
+    } catch (error) {
+      console.error(`Failed to read main template file: ${error}`)
+      throw new Error(`Failed to read system prompt template: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
 
     // Read the additional system prompt file if it exists
     const additionalTemplatePath = path.join(process.cwd(), 'content/system-prompt-extended.md')
     let additionalContent = ''
+    console.log(`Checking for extended template at: ${additionalTemplatePath}`)
     try {
       additionalContent = fs.readFileSync(additionalTemplatePath, 'utf8')
+      console.log(`Successfully read extended template (${additionalContent.length} characters)`)
     } catch (error) {
       console.log('No extended system prompt file found, continuing with base content only')
     }
 
-    // Fetch all content
-    const [profile, about, education, experiences, references, blogPosts, projects] = await Promise.all([
-      getProfileInfo(),
-      getAboutContent(),
-      getEducation(),
-      getExperiences(),
-      getReferences(),
-      getBlogPosts(),
-      getProjects(),
-    ])
+    // Fetch all content with individual error handling
+    console.log('Fetching all content sources...')
+    let profile, about, education, experiences, references, blogPosts, projects
+    
+    try {
+      [profile, about, education, experiences, references, blogPosts, projects] = await Promise.all([
+        getProfileInfo(),
+        getAboutContent(),
+        getEducation(),
+        getExperiences(),
+        getReferences(),
+        getBlogPosts(),
+        getProjects(),
+      ])
+      console.log('Successfully fetched all content sources')
+    } catch (error) {
+      console.error(`Failed to fetch content sources: ${error}`)
+      throw new Error(`Failed to load content: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
 
     // Format work experience
     const workExperience = experiences.map((exp, index) => `
@@ -256,18 +278,35 @@ ${post.content.replace(/<[^>]*>/g, '').slice(0, 500).trim()}...
     }
 
     // Build the main system prompt
-    const mainPrompt = await buildSystemPromptFromTemplate(templateContent, templateData)
+    console.log('Building main system prompt from template...')
+    let mainPrompt: string
+    try {
+      mainPrompt = await buildSystemPromptFromTemplate(templateContent, templateData)
+      console.log(`Successfully built main prompt (${mainPrompt.length} characters)`)
+    } catch (error) {
+      console.error(`Failed to build main prompt from template: ${error}`)
+      throw new Error(`Template processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
     
     // Build and append extended content if available
     let finalPrompt = mainPrompt
     if (additionalContent) {
-      const extendedPrompt = await buildSystemPromptFromTemplate(additionalContent, templateData)
-      finalPrompt = `${mainPrompt}\n\n## EXTENDED CONTEXT\n${extendedPrompt}`
+      console.log('Processing extended template content...')
+      try {
+        const extendedPrompt = await buildSystemPromptFromTemplate(additionalContent, templateData)
+        finalPrompt = `${mainPrompt}\n\n## EXTENDED CONTEXT\n${extendedPrompt}`
+        console.log(`Successfully built extended prompt (${finalPrompt.length} total characters)`)
+      } catch (error) {
+        console.error(`Failed to process extended template: ${error}`)
+        console.log('Continuing with main prompt only')
+      }
     }
 
+    console.log('System prompt build completed successfully')
     return finalPrompt
   } catch (error) {
     console.error('Error building system prompt:', error)
-    throw new Error('Failed to build system prompt')
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    throw new Error(`Failed to build system prompt: ${errorMessage}`)
   }
 })

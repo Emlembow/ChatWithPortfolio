@@ -57,14 +57,30 @@ export type Education = {
 // Helper function to read directory contents
 const readDirectory = (dir: string) => {
   const directory = path.join(process.cwd(), dir)
-  return fs.readdirSync(directory)
+  try {
+    console.log(`Reading directory: ${directory}`)
+    const files = fs.readdirSync(directory)
+    console.log(`Successfully read directory ${dir} with ${files.length} files`)
+    return files
+  } catch (error) {
+    console.error(`Failed to read directory ${dir}:`, error)
+    throw new Error(`Cannot read directory ${dir}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
 }
 
 // Helper function to read and parse markdown file
 const readMarkdownFile = (filePath: string) => {
   const fullPath = path.join(process.cwd(), filePath)
-  const fileContents = fs.readFileSync(fullPath, "utf8")
-  return matter(fileContents)
+  try {
+    console.log(`Reading markdown file: ${fullPath}`)
+    const fileContents = fs.readFileSync(fullPath, "utf8")
+    const parsed = matter(fileContents)
+    console.log(`Successfully parsed markdown file: ${filePath}`)
+    return parsed
+  } catch (error) {
+    console.error(`Failed to read markdown file ${filePath}:`, error)
+    throw new Error(`Cannot read file ${filePath}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
 }
 
 // Get profile information
