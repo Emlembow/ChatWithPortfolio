@@ -5,6 +5,8 @@ import {
   getEducation,
   getExperiences,
   getReferences,
+  type Education,
+  type SocialLink,
 } from "./content"
 import fs from "fs"
 import path from "path"
@@ -228,7 +230,7 @@ export const buildSystemPrompt = cache(async (): Promise<string> => {
       templateFilePath
     ]
     
-    let templateContent: string
+    let templateContent: string | undefined = undefined
     let templateError: Error | null = null
     
     for (const templatePath of possibleTemplatePaths) {
@@ -244,7 +246,7 @@ export const buildSystemPrompt = cache(async (): Promise<string> => {
       }
     }
     
-    if (!templateContent!) {
+    if (!templateContent) {
       console.error(`Failed to read main template file from any path:`, templateError)
       throw new Error(`Failed to read system prompt template: ${templateError?.message || 'All path resolution attempts failed'}`)
     }
@@ -278,7 +280,7 @@ export const buildSystemPrompt = cache(async (): Promise<string> => {
 
     // Fetch all content with individual error handling
     console.log('Fetching all content sources...')
-    let profile, about, education, experiences, references, blogPosts, projects
+    let profile: any, about: any, education: any, experiences: any, references: any, blogPosts: any, projects: any
     
     try {
       // Fetch content sources individually with detailed error tracking
@@ -325,7 +327,7 @@ export const buildSystemPrompt = cache(async (): Promise<string> => {
     }
 
     // Format work experience
-    const workExperience = experiences ? experiences.map((exp, index) => `
+    const workExperience = experiences && Array.isArray(experiences) ? experiences.map((exp, index) => `
 ### ${index + 1}. ${exp.title} at ${exp.company}
 - **Duration**: ${exp.startDate} to ${exp.endDate}
 - **Location**: ${exp.location}
@@ -337,7 +339,7 @@ ${exp.description.replace(/<[^>]*>/g, '').trim()}
 `).join('\n') : ''
 
     // Format projects
-    const projectsFormatted = projects ? projects.map((project, index) => `
+    const projectsFormatted = projects && Array.isArray(projects) ? projects.map((project, index) => `
 ### ${index + 1}. ${project.title}
 - **Type**: ${project.type}
 - **Technologies**: ${project.technologies.join(', ')}
@@ -348,13 +350,13 @@ ${project.content.replace(/<[^>]*>/g, '').trim()}
 `).join('\n') : ''
 
     // Format education
-    const educationFormatted = education?.sections ? education.sections.map(section => `
+    const educationFormatted = education?.sections ? education.sections.map((section: Education['sections'][0]) => `
 **${section.title}**
 ${section.content.replace(/<[^>]*>/g, '').trim()}
 `).join('\n') : ''
 
     // Format references
-    const referencesFormatted = references ? references.map((ref, index) => `
+    const referencesFormatted = references && Array.isArray(references) ? references.map((ref, index) => `
 ### ${index + 1}. ${ref.name}
 - **Title**: ${ref.title}
 - **Relationship**: ${ref.relationship}
@@ -366,7 +368,7 @@ ${ref.content.replace(/<[^>]*>/g, '').trim()}
 `).join('\n') : ''
 
     // Format blog posts
-    const blogPostsFormatted = blogPosts ? blogPosts.map((post, index) => `
+    const blogPostsFormatted = blogPosts && Array.isArray(blogPosts) ? blogPosts.map((post, index) => `
 ### ${index + 1}. ${post.title}
 - **Published**: ${post.date}
 - **URL**: ${post.url}
@@ -377,8 +379,8 @@ ${post.content.replace(/<[^>]*>/g, '').slice(0, 500).trim()}...
 
     // Aggregate skills and technologies
     const allTechnologies = [...new Set(
-      (experiences ? experiences.flatMap(exp => exp.technologies) : [])
-        .concat(projects ? projects.flatMap(proj => proj.technologies) : [])
+      (experiences && Array.isArray(experiences) ? experiences.flatMap(exp => exp.technologies) : [])
+        .concat(projects && Array.isArray(projects) ? projects.flatMap(proj => proj.technologies) : [])
     )]
 
     const skillsSummary = `
@@ -392,7 +394,7 @@ ${post.content.replace(/<[^>]*>/g, '').slice(0, 500).trim()}...
 `
 
     // Get current role info (latest experience)
-    const currentRole = experiences && experiences.length > 0 ? experiences[0] : null
+    const currentRole = experiences && Array.isArray(experiences) && experiences.length > 0 ? experiences[0] : null
     const currentRoleInfo = currentRole 
       ? `Currently ${currentRole.title} at ${currentRole.company}. ${currentRole.description.replace(/<[^>]*>/g, '').slice(0, 200).trim()}...`
       : 'Looking for new opportunities in product management.'
@@ -403,7 +405,7 @@ ${post.content.replace(/<[^>]*>/g, '').slice(0, 500).trim()}...
       : 'I have experience with various modern technologies across the full product development lifecycle.'
 
     // Get LinkedIn URL
-    const linkedinUrl = profile?.socialLinks?.find(link => link.platform === 'LinkedIn')?.url || 'Contact via email'
+    const linkedinUrl = profile?.socialLinks?.find((link: SocialLink) => link.platform === 'LinkedIn')?.url || 'Contact via email'
 
     // Opportunity info from about content or default
     const opportunityInfo = about?.content?.includes('[') 
@@ -436,9 +438,9 @@ ${post.content.replace(/<[^>]*>/g, '').slice(0, 500).trim()}...
 
     // Build the main system prompt
     console.log('Building main system prompt from template...')
-    let mainPrompt: string
+    let mainPrompt: string = ''
     try {
-      mainPrompt = await buildSystemPromptFromTemplate(templateContent, templateData)
+      mainPrompt = await buildSystemPromptFromTemplate(templateContent!, templateData)
       console.log(`Successfully built main prompt (${mainPrompt.length} characters)`)
     } catch (error) {
       console.error(`Failed to build main prompt from template: ${error}`)
