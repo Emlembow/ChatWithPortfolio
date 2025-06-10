@@ -228,7 +228,7 @@ export const buildSystemPrompt = cache(async (): Promise<string> => {
       templateFilePath
     ]
     
-    let templateContent: string
+    let templateContent: string | undefined = undefined
     let templateError: Error | null = null
     
     for (const templatePath of possibleTemplatePaths) {
@@ -244,7 +244,7 @@ export const buildSystemPrompt = cache(async (): Promise<string> => {
       }
     }
     
-    if (!templateContent!) {
+    if (!templateContent) {
       console.error(`Failed to read main template file from any path:`, templateError)
       throw new Error(`Failed to read system prompt template: ${templateError?.message || 'All path resolution attempts failed'}`)
     }
@@ -278,7 +278,7 @@ export const buildSystemPrompt = cache(async (): Promise<string> => {
 
     // Fetch all content with individual error handling
     console.log('Fetching all content sources...')
-    let profile, about, education, experiences, references, blogPosts, projects
+    let profile: any, about: any, education: any, experiences: any, references: any, blogPosts: any, projects: any
     
     try {
       // Fetch content sources individually with detailed error tracking
@@ -436,9 +436,9 @@ ${post.content.replace(/<[^>]*>/g, '').slice(0, 500).trim()}...
 
     // Build the main system prompt
     console.log('Building main system prompt from template...')
-    let mainPrompt: string
+    let mainPrompt: string = ''
     try {
-      mainPrompt = await buildSystemPromptFromTemplate(templateContent, templateData)
+      mainPrompt = await buildSystemPromptFromTemplate(templateContent!, templateData)
       console.log(`Successfully built main prompt (${mainPrompt.length} characters)`)
     } catch (error) {
       console.error(`Failed to build main prompt from template: ${error}`)
