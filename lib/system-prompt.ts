@@ -325,7 +325,7 @@ export const buildSystemPrompt = cache(async (): Promise<string> => {
     }
 
     // Format work experience
-    const workExperience = experiences.map((exp, index) => `
+    const workExperience = experiences ? experiences.map((exp, index) => `
 ### ${index + 1}. ${exp.title} at ${exp.company}
 - **Duration**: ${exp.startDate} to ${exp.endDate}
 - **Location**: ${exp.location}
@@ -334,10 +334,10 @@ export const buildSystemPrompt = cache(async (): Promise<string> => {
 
 **Key Achievements**:
 ${exp.description.replace(/<[^>]*>/g, '').trim()}
-`).join('\n')
+`).join('\n') : ''
 
     // Format projects
-    const projectsFormatted = projects.map((project, index) => `
+    const projectsFormatted = projects ? projects.map((project, index) => `
 ### ${index + 1}. ${project.title}
 - **Type**: ${project.type}
 - **Technologies**: ${project.technologies.join(', ')}
@@ -345,16 +345,16 @@ ${exp.description.replace(/<[^>]*>/g, '').trim()}
 
 **Description**:
 ${project.content.replace(/<[^>]*>/g, '').trim()}
-`).join('\n')
+`).join('\n') : ''
 
     // Format education
-    const educationFormatted = education.sections.map(section => `
+    const educationFormatted = education?.sections ? education.sections.map(section => `
 **${section.title}**
 ${section.content.replace(/<[^>]*>/g, '').trim()}
-`).join('\n')
+`).join('\n') : ''
 
     // Format references
-    const referencesFormatted = references.map((ref, index) => `
+    const referencesFormatted = references ? references.map((ref, index) => `
 ### ${index + 1}. ${ref.name}
 - **Title**: ${ref.title}
 - **Relationship**: ${ref.relationship}
@@ -363,22 +363,22 @@ ${section.content.replace(/<[^>]*>/g, '').trim()}
 
 **Recommendation**:
 ${ref.content.replace(/<[^>]*>/g, '').trim()}
-`).join('\n')
+`).join('\n') : ''
 
     // Format blog posts
-    const blogPostsFormatted = blogPosts.map((post, index) => `
+    const blogPostsFormatted = blogPosts ? blogPosts.map((post, index) => `
 ### ${index + 1}. ${post.title}
 - **Published**: ${post.date}
 - **URL**: ${post.url}
 
 **Summary**:
 ${post.content.replace(/<[^>]*>/g, '').slice(0, 500).trim()}...
-`).join('\n')
+`).join('\n') : ''
 
     // Aggregate skills and technologies
     const allTechnologies = [...new Set(
-      experiences.flatMap(exp => exp.technologies)
-        .concat(projects.flatMap(proj => proj.technologies))
+      (experiences ? experiences.flatMap(exp => exp.technologies) : [])
+        .concat(projects ? projects.flatMap(proj => proj.technologies) : [])
     )]
 
     const skillsSummary = `
@@ -392,7 +392,7 @@ ${post.content.replace(/<[^>]*>/g, '').slice(0, 500).trim()}...
 `
 
     // Get current role info (latest experience)
-    const currentRole = experiences.length > 0 ? experiences[0] : null
+    const currentRole = experiences && experiences.length > 0 ? experiences[0] : null
     const currentRoleInfo = currentRole 
       ? `Currently ${currentRole.title} at ${currentRole.company}. ${currentRole.description.replace(/<[^>]*>/g, '').slice(0, 200).trim()}...`
       : 'Looking for new opportunities in product management.'
@@ -403,19 +403,19 @@ ${post.content.replace(/<[^>]*>/g, '').slice(0, 500).trim()}...
       : 'I have experience with various modern technologies across the full product development lifecycle.'
 
     // Get LinkedIn URL
-    const linkedinUrl = profile.socialLinks.find(link => link.platform === 'LinkedIn')?.url || 'Contact via email'
+    const linkedinUrl = profile?.socialLinks?.find(link => link.platform === 'LinkedIn')?.url || 'Contact via email'
 
     // Opportunity info from about content or default
-    const opportunityInfo = about.content.includes('[') 
+    const opportunityInfo = about?.content?.includes('[') 
       ? 'I am open to discussing opportunities that align with my experience in product management, especially roles involving scaling products, international expansion, and regulatory compliance.'
-      : about.content.replace(/<[^>]*>/g, '').trim()
+      : about?.content?.replace(/<[^>]*>/g, '').trim() || 'Looking for new opportunities in product management.'
 
     // Build data object for template replacement
     const templateData = {
-      name: profile.name,
-      title: profile.title,
-      experience_summary: profile.summary,
-      email: profile.email,
+      name: profile?.name || 'Unknown',
+      title: profile?.title || 'Product Manager',
+      experience_summary: profile?.summary || 'Experienced product manager',
+      email: profile?.email || 'Contact via LinkedIn',
       linkedin_url: linkedinUrl,
       work_experience: workExperience,
       projects: projectsFormatted,
