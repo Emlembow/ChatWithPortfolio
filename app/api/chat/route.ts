@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
 import { buildSystemPrompt } from "@/lib/system-prompt-bundled"
 import OpenAI from "openai"
+import { validateEnv, env } from "@/lib/env"
 
 // Use nodejs runtime to support fs module
 export const runtime = "nodejs"
@@ -32,9 +33,25 @@ export async function POST(request: NextRequest) {
     // Get system prompt
     const systemPrompt = await buildSystemPrompt()
 
+    // Validate environment variables
+    try {
+      validateEnv()
+    } catch (error) {
+      return new NextResponse(
+        JSON.stringify({
+          error: "Configuration error",
+          details: error instanceof Error ? error.message : "Invalid configuration",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        },
+      )
+    }
+
     // Initialize OpenAI client
     const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: env.OPENAI_API_KEY,
     })
 
     // Build conversation messages for chat completions API
