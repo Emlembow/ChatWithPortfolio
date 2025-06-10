@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
-import { buildSystemPrompt } from "@/lib/system-prompt"
+import { buildSystemPrompt } from "@/lib/system-prompt-bundled"
 import OpenAI from "openai"
 
 // Use nodejs runtime to support fs module

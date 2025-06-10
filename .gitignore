@@ -104,3 +104,6 @@ logs
 
 # Claude
 CLAUDE.md
+
+# Generated files
+lib/content-bundle.ts
