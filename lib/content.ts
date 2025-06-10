@@ -56,31 +56,62 @@ export type Education = {
 
 // Helper function to read directory contents
 const readDirectory = (dir: string) => {
-  const directory = path.join(process.cwd(), dir)
-  try {
-    console.log(`Reading directory: ${directory}`)
-    const files = fs.readdirSync(directory)
-    console.log(`Successfully read directory ${dir} with ${files.length} files`)
-    return files
-  } catch (error) {
-    console.error(`Failed to read directory ${dir}:`, error)
-    throw new Error(`Cannot read directory ${dir}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  // Try multiple path resolution strategies for different environments
+  const possiblePaths = [
+    path.join(process.cwd(), dir), // Standard Next.js dev/build
+    path.join(__dirname, '..', dir), // Relative to lib directory
+    path.join(__dirname, '../..', dir), // For nested builds
+    dir // Direct path as fallback
+  ]
+  
+  let directory: string | null = null
+  let lastError: Error | null = null
+  
+  for (const possiblePath of possiblePaths) {
+    try {
+      console.log(`Trying directory path: ${possiblePath}`)
+      const files = fs.readdirSync(possiblePath)
+      console.log(`Successfully read directory ${dir} with ${files.length} files from path: ${possiblePath}`)
+      return files
+    } catch (error) {
+      console.log(`Failed to read from ${possiblePath}:`, error instanceof Error ? error.message : 'Unknown error')
+      lastError = error instanceof Error ? error : new Error('Unknown error')
+      continue
+    }
   }
+  
+  console.error(`Failed to read directory ${dir} from any path:`, lastError)
+  throw new Error(`Cannot read directory ${dir}: ${lastError?.message || 'All path resolution attempts failed'}`)
 }
 
 // Helper function to read and parse markdown file
 const readMarkdownFile = (filePath: string) => {
-  const fullPath = path.join(process.cwd(), filePath)
-  try {
-    console.log(`Reading markdown file: ${fullPath}`)
-    const fileContents = fs.readFileSync(fullPath, "utf8")
-    const parsed = matter(fileContents)
-    console.log(`Successfully parsed markdown file: ${filePath}`)
-    return parsed
-  } catch (error) {
-    console.error(`Failed to read markdown file ${filePath}:`, error)
-    throw new Error(`Cannot read file ${filePath}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  // Try multiple path resolution strategies for different environments
+  const possiblePaths = [
+    path.join(process.cwd(), filePath), // Standard Next.js dev/build
+    path.join(__dirname, '..', filePath), // Relative to lib directory
+    path.join(__dirname, '../..', filePath), // For nested builds
+    filePath // Direct path as fallback
+  ]
+  
+  let lastError: Error | null = null
+  
+  for (const possiblePath of possiblePaths) {
+    try {
+      console.log(`Trying file path: ${possiblePath}`)
+      const fileContents = fs.readFileSync(possiblePath, "utf8")
+      const parsed = matter(fileContents)
+      console.log(`Successfully parsed markdown file: ${filePath} from path: ${possiblePath}`)
+      return parsed
+    } catch (error) {
+      console.log(`Failed to read from ${possiblePath}:`, error instanceof Error ? error.message : 'Unknown error')
+      lastError = error instanceof Error ? error : new Error('Unknown error')
+      continue
+    }
   }
+  
+  console.error(`Failed to read markdown file ${filePath} from any path:`, lastError)
+  throw new Error(`Cannot read file ${filePath}: ${lastError?.message || 'All path resolution attempts failed'}`)
 }
 
 // Get profile information

@@ -34,15 +34,51 @@ export type Project = {
 
 // Helper function to read directory contents
 const readDirectory = (dir: string) => {
-  const directory = path.join(process.cwd(), dir)
-  return fs.readdirSync(directory)
+  // Try multiple path resolution strategies for different environments
+  const possiblePaths = [
+    path.join(process.cwd(), dir), // Standard Next.js dev/build
+    path.join(__dirname, '..', dir), // Relative to lib directory
+    path.join(__dirname, '../..', dir), // For nested builds
+    dir // Direct path as fallback
+  ]
+  
+  let lastError: Error | null = null
+  
+  for (const possiblePath of possiblePaths) {
+    try {
+      return fs.readdirSync(possiblePath)
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Unknown error')
+      continue
+    }
+  }
+  
+  throw new Error(`Cannot read directory ${dir}: ${lastError?.message || 'All path resolution attempts failed'}`)
 }
 
 // Helper function to read and parse markdown file
 const readMarkdownFile = (filePath: string) => {
-  const fullPath = path.join(process.cwd(), filePath)
-  const fileContents = fs.readFileSync(fullPath, "utf8")
-  return matter(fileContents)
+  // Try multiple path resolution strategies for different environments
+  const possiblePaths = [
+    path.join(process.cwd(), filePath), // Standard Next.js dev/build
+    path.join(__dirname, '..', filePath), // Relative to lib directory
+    path.join(__dirname, '../..', filePath), // For nested builds
+    filePath // Direct path as fallback
+  ]
+  
+  let lastError: Error | null = null
+  
+  for (const possiblePath of possiblePaths) {
+    try {
+      const fileContents = fs.readFileSync(possiblePath, "utf8")
+      return matter(fileContents)
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Unknown error')
+      continue
+    }
+  }
+  
+  throw new Error(`Cannot read file ${filePath}: ${lastError?.message || 'All path resolution attempts failed'}`)
 }
 
 // Get all blog posts
@@ -123,27 +159,60 @@ export const buildSystemPrompt = cache(async (): Promise<string> => {
   try {
     console.log('Starting system prompt build process...')
     
-    // Read the main template file
-    const templatePath = path.join(process.cwd(), 'content/system-prompt.md')
-    console.log(`Reading main template from: ${templatePath}`)
+    // Read the main template file using multi-path resolution
+    const templateFilePath = 'content/system-prompt.md'
+    const possibleTemplatePaths = [
+      path.join(process.cwd(), templateFilePath),
+      path.join(__dirname, '..', templateFilePath),
+      path.join(__dirname, '../..', templateFilePath),
+      templateFilePath
+    ]
     
     let templateContent: string
-    try {
-      templateContent = fs.readFileSync(templatePath, 'utf8')
-      console.log(`Successfully read main template (${templateContent.length} characters)`)
-    } catch (error) {
-      console.error(`Failed to read main template file: ${error}`)
-      throw new Error(`Failed to read system prompt template: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    let templateError: Error | null = null
+    
+    for (const templatePath of possibleTemplatePaths) {
+      try {
+        console.log(`Reading main template from: ${templatePath}`)
+        templateContent = fs.readFileSync(templatePath, 'utf8')
+        console.log(`Successfully read main template (${templateContent.length} characters)`)
+        break
+      } catch (error) {
+        console.log(`Failed to read template from ${templatePath}:`, error instanceof Error ? error.message : 'Unknown error')
+        templateError = error instanceof Error ? error : new Error('Unknown error')
+        continue
+      }
+    }
+    
+    if (!templateContent!) {
+      console.error(`Failed to read main template file from any path:`, templateError)
+      throw new Error(`Failed to read system prompt template: ${templateError?.message || 'All path resolution attempts failed'}`)
     }
 
-    // Read the additional system prompt file if it exists
-    const additionalTemplatePath = path.join(process.cwd(), 'content/system-prompt-extended.md')
+    // Read the additional system prompt file if it exists using multi-path resolution
+    const additionalTemplateFilePath = 'content/system-prompt-extended.md'
+    const possibleAdditionalPaths = [
+      path.join(process.cwd(), additionalTemplateFilePath),
+      path.join(__dirname, '..', additionalTemplateFilePath),
+      path.join(__dirname, '../..', additionalTemplateFilePath),
+      additionalTemplateFilePath
+    ]
+    
     let additionalContent = ''
-    console.log(`Checking for extended template at: ${additionalTemplatePath}`)
-    try {
-      additionalContent = fs.readFileSync(additionalTemplatePath, 'utf8')
-      console.log(`Successfully read extended template (${additionalContent.length} characters)`)
-    } catch (error) {
+    
+    for (const additionalPath of possibleAdditionalPaths) {
+      try {
+        console.log(`Checking for extended template at: ${additionalPath}`)
+        additionalContent = fs.readFileSync(additionalPath, 'utf8')
+        console.log(`Successfully read extended template (${additionalContent.length} characters)`)
+        break
+      } catch (error) {
+        // Continue trying other paths
+        continue
+      }
+    }
+    
+    if (!additionalContent) {
       console.log('No extended system prompt file found, continuing with base content only')
     }
 
