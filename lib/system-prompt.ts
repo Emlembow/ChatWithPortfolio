@@ -6,6 +6,7 @@ import {
   getExperiences,
   getReferences,
   type Education,
+  type SocialLink,
 } from "./content"
 import fs from "fs"
 import path from "path"
@@ -404,7 +405,7 @@ ${post.content.replace(/<[^>]*>/g, '').slice(0, 500).trim()}...
       : 'I have experience with various modern technologies across the full product development lifecycle.'
 
     // Get LinkedIn URL
-    const linkedinUrl = profile?.socialLinks?.find(link => link.platform === 'LinkedIn')?.url || 'Contact via email'
+    const linkedinUrl = profile?.socialLinks?.find((link: SocialLink) => link.platform === 'LinkedIn')?.url || 'Contact via email'
 
     // Opportunity info from about content or default
     const opportunityInfo = about?.content?.includes('[') 
