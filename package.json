@@ -7,7 +7,8 @@
     "prebuild": "node scripts/generate-content-bundle.js",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "setup": "node scripts/setup.js"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "1.2.2",
