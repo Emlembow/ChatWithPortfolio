@@ -64,23 +64,47 @@ const readDirectory = (dir: string) => {
     dir // Direct path as fallback
   ]
   
-  let directory: string | null = null
   let lastError: Error | null = null
+  const attemptResults: Array<{ path: string; exists: boolean; error?: string }> = []
+  
+  console.log(`[readDirectory] Attempting to read directory: ${dir}`)
+  console.log(`[readDirectory] Process CWD: ${process.cwd()}`)
+  console.log(`[readDirectory] __dirname: ${__dirname}`)
   
   for (const possiblePath of possiblePaths) {
+    const exists = fs.existsSync(possiblePath)
+    attemptResults.push({ path: possiblePath, exists })
+    
     try {
-      console.log(`Trying directory path: ${possiblePath}`)
+      console.log(`[readDirectory] Trying path: ${possiblePath} (exists: ${exists})`)
+      
+      if (!exists) {
+        const error = new Error(`Directory does not exist at path: ${possiblePath}`)
+        attemptResults[attemptResults.length - 1].error = error.message
+        lastError = error
+        continue
+      }
+      
       const files = fs.readdirSync(possiblePath)
-      console.log(`Successfully read directory ${dir} with ${files.length} files from path: ${possiblePath}`)
+      console.log(`[readDirectory] SUCCESS: Read ${dir} with ${files.length} files from ${possiblePath}`)
       return files
     } catch (error) {
-      console.log(`Failed to read from ${possiblePath}:`, error instanceof Error ? error.message : 'Unknown error')
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+      console.log(`[readDirectory] FAILED: ${possiblePath}: ${errorMsg}`)
+      attemptResults[attemptResults.length - 1].error = errorMsg
       lastError = error instanceof Error ? error : new Error('Unknown error')
       continue
     }
   }
   
-  console.error(`Failed to read directory ${dir} from any path:`, lastError)
+  // Enhanced error logging with all attempt details
+  console.error(`[readDirectory] CRITICAL: Failed to read ${dir} from ANY path`)
+  console.error(`[readDirectory] Attempt summary:`)
+  attemptResults.forEach((result, index) => {
+    console.error(`  ${index + 1}. ${result.path} - exists: ${result.exists}${result.error ? ` - error: ${result.error}` : ''}`)
+  })
+  console.error(`[readDirectory] Last error:`, lastError)
+  
   throw new Error(`Cannot read directory ${dir}: ${lastError?.message || 'All path resolution attempts failed'}`)
 }
 
@@ -95,23 +119,49 @@ const readMarkdownFile = (filePath: string) => {
   ]
   
   let lastError: Error | null = null
+  const attemptResults: Array<{ path: string; exists: boolean; error?: string }> = []
+  
+  // First, log environment info for debugging
+  console.log(`[readMarkdownFile] Attempting to read: ${filePath}`)
+  console.log(`[readMarkdownFile] Process CWD: ${process.cwd()}`)
+  console.log(`[readMarkdownFile] __dirname: ${__dirname}`)
   
   for (const possiblePath of possiblePaths) {
+    const exists = fs.existsSync(possiblePath)
+    attemptResults.push({ path: possiblePath, exists })
+    
     try {
-      console.log(`Trying file path: ${possiblePath}`)
+      console.log(`[readMarkdownFile] Trying path: ${possiblePath} (exists: ${exists})`)
+      
+      if (!exists) {
+        const error = new Error(`File does not exist at path: ${possiblePath}`)
+        attemptResults[attemptResults.length - 1].error = error.message
+        lastError = error
+        continue
+      }
+      
       const fileContents = fs.readFileSync(possiblePath, "utf8")
       const parsed = matter(fileContents)
-      console.log(`Successfully parsed markdown file: ${filePath} from path: ${possiblePath}`)
+      console.log(`[readMarkdownFile] SUCCESS: Read and parsed ${filePath} from ${possiblePath} (${fileContents.length} characters)`)
       return parsed
     } catch (error) {
-      console.log(`Failed to read from ${possiblePath}:`, error instanceof Error ? error.message : 'Unknown error')
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+      console.log(`[readMarkdownFile] FAILED: ${possiblePath}: ${errorMsg}`)
+      attemptResults[attemptResults.length - 1].error = errorMsg
       lastError = error instanceof Error ? error : new Error('Unknown error')
       continue
     }
   }
   
-  console.error(`Failed to read markdown file ${filePath} from any path:`, lastError)
-  throw new Error(`Cannot read file ${filePath}: ${lastError?.message || 'All path resolution attempts failed'}`)
+  // Enhanced error logging with all attempt details
+  console.error(`[readMarkdownFile] CRITICAL: Failed to read ${filePath} from ANY path`)
+  console.error(`[readMarkdownFile] Attempt summary:`)
+  attemptResults.forEach((result, index) => {
+    console.error(`  ${index + 1}. ${result.path} - exists: ${result.exists}${result.error ? ` - error: ${result.error}` : ''}`)
+  })
+  console.error(`[readMarkdownFile] Last error:`, lastError)
+  
+  throw new Error(`Cannot read file content/${filePath.replace('content/', '')}: ${lastError?.message || 'All path resolution attempts failed'}`)
 }
 
 // Get profile information

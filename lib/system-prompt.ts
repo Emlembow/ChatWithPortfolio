@@ -43,15 +43,45 @@ const readDirectory = (dir: string) => {
   ]
   
   let lastError: Error | null = null
+  const attemptResults: Array<{ path: string; exists: boolean; error?: string }> = []
+  
+  console.log(`[system-prompt:readDirectory] Attempting to read directory: ${dir}`)
+  console.log(`[system-prompt:readDirectory] Process CWD: ${process.cwd()}`)
+  console.log(`[system-prompt:readDirectory] __dirname: ${__dirname}`)
   
   for (const possiblePath of possiblePaths) {
+    const exists = fs.existsSync(possiblePath)
+    attemptResults.push({ path: possiblePath, exists })
+    
     try {
-      return fs.readdirSync(possiblePath)
+      console.log(`[system-prompt:readDirectory] Trying path: ${possiblePath} (exists: ${exists})`)
+      
+      if (!exists) {
+        const error = new Error(`Directory does not exist at path: ${possiblePath}`)
+        attemptResults[attemptResults.length - 1].error = error.message
+        lastError = error
+        continue
+      }
+      
+      const files = fs.readdirSync(possiblePath)
+      console.log(`[system-prompt:readDirectory] SUCCESS: Read ${dir} with ${files.length} files from ${possiblePath}`)
+      return files
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+      console.log(`[system-prompt:readDirectory] FAILED: ${possiblePath}: ${errorMsg}`)
+      attemptResults[attemptResults.length - 1].error = errorMsg
       lastError = error instanceof Error ? error : new Error('Unknown error')
       continue
     }
   }
+  
+  // Enhanced error logging with all attempt details
+  console.error(`[system-prompt:readDirectory] CRITICAL: Failed to read ${dir} from ANY path`)
+  console.error(`[system-prompt:readDirectory] Attempt summary:`)
+  attemptResults.forEach((result, index) => {
+    console.error(`  ${index + 1}. ${result.path} - exists: ${result.exists}${result.error ? ` - error: ${result.error}` : ''}`)
+  })
+  console.error(`[system-prompt:readDirectory] Last error:`, lastError)
   
   throw new Error(`Cannot read directory ${dir}: ${lastError?.message || 'All path resolution attempts failed'}`)
 }
@@ -67,16 +97,46 @@ const readMarkdownFile = (filePath: string) => {
   ]
   
   let lastError: Error | null = null
+  const attemptResults: Array<{ path: string; exists: boolean; error?: string }> = []
+  
+  console.log(`[system-prompt:readMarkdownFile] Attempting to read: ${filePath}`)
+  console.log(`[system-prompt:readMarkdownFile] Process CWD: ${process.cwd()}`)
+  console.log(`[system-prompt:readMarkdownFile] __dirname: ${__dirname}`)
   
   for (const possiblePath of possiblePaths) {
+    const exists = fs.existsSync(possiblePath)
+    attemptResults.push({ path: possiblePath, exists })
+    
     try {
+      console.log(`[system-prompt:readMarkdownFile] Trying path: ${possiblePath} (exists: ${exists})`)
+      
+      if (!exists) {
+        const error = new Error(`File does not exist at path: ${possiblePath}`)
+        attemptResults[attemptResults.length - 1].error = error.message
+        lastError = error
+        continue
+      }
+      
       const fileContents = fs.readFileSync(possiblePath, "utf8")
-      return matter(fileContents)
+      const parsed = matter(fileContents)
+      console.log(`[system-prompt:readMarkdownFile] SUCCESS: Read and parsed ${filePath} from ${possiblePath} (${fileContents.length} characters)`)
+      return parsed
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+      console.log(`[system-prompt:readMarkdownFile] FAILED: ${possiblePath}: ${errorMsg}`)
+      attemptResults[attemptResults.length - 1].error = errorMsg
       lastError = error instanceof Error ? error : new Error('Unknown error')
       continue
     }
   }
+  
+  // Enhanced error logging with all attempt details
+  console.error(`[system-prompt:readMarkdownFile] CRITICAL: Failed to read ${filePath} from ANY path`)
+  console.error(`[system-prompt:readMarkdownFile] Attempt summary:`)
+  attemptResults.forEach((result, index) => {
+    console.error(`  ${index + 1}. ${result.path} - exists: ${result.exists}${result.error ? ` - error: ${result.error}` : ''}`)
+  })
+  console.error(`[system-prompt:readMarkdownFile] Last error:`, lastError)
   
   throw new Error(`Cannot read file ${filePath}: ${lastError?.message || 'All path resolution attempts failed'}`)
 }
@@ -221,7 +281,8 @@ export const buildSystemPrompt = cache(async (): Promise<string> => {
     let profile, about, education, experiences, references, blogPosts, projects
     
     try {
-      [profile, about, education, experiences, references, blogPosts, projects] = await Promise.all([
+      // Fetch content sources individually with detailed error tracking
+      const contentResults = await Promise.allSettled([
         getProfileInfo(),
         getAboutContent(),
         getEducation(),
@@ -230,9 +291,36 @@ export const buildSystemPrompt = cache(async (): Promise<string> => {
         getBlogPosts(),
         getProjects(),
       ])
+      
+      const contentNames = ['profile', 'about', 'education', 'experiences', 'references', 'blogPosts', 'projects']
+      const failedSources: string[] = []
+      
+      contentResults.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          const sourceName = contentNames[index]
+          console.error(`[buildSystemPrompt] FAILED to load ${sourceName}:`, result.reason)
+          failedSources.push(`${sourceName}: ${result.reason instanceof Error ? result.reason.message : 'Unknown error'}`)
+        } else {
+          console.log(`[buildSystemPrompt] SUCCESS: Loaded ${contentNames[index]}`)
+        }
+      })
+      
+      if (failedSources.length > 0) {
+        console.error(`[buildSystemPrompt] CRITICAL: Failed to load ${failedSources.length} content sources:`)
+        failedSources.forEach((error, index) => {
+          console.error(`  ${index + 1}. ${error}`)
+        })
+        throw new Error(`Failed to load content sources: ${failedSources.join('; ')}`)
+      }
+      
+      // Extract successful results
+      [profile, about, education, experiences, references, blogPosts, projects] = contentResults.map(result => 
+        result.status === 'fulfilled' ? result.value : null
+      )
+      
       console.log('Successfully fetched all content sources')
     } catch (error) {
-      console.error(`Failed to fetch content sources: ${error}`)
+      console.error(`[buildSystemPrompt] Failed to fetch content sources: ${error}`)
       throw new Error(`Failed to load content: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
 
