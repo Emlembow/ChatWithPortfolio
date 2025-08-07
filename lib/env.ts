@@ -19,5 +19,5 @@ export function validateEnv() {
 
 export const env = {
   OPENAI_API_KEY: process.env.OPENAI_API_KEY!,
-  OPENAI_MODEL: process.env.OPENAI_MODEL || 'gpt-4.1-nano-2025-04-14',
+  OPENAI_MODEL: process.env.OPENAI_MODEL || 'gpt-5-nano-2025-08-07',
 }

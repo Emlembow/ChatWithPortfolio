@@ -223,7 +223,7 @@ const systemPrompt = await buildSystemPrompt()
 
 // Use with OpenAI
 const response = await openai.chat.completions.create({
-  model: "gpt-4",
+  model: "gpt-5-nano-2025-08-07",
   messages: [
     { role: "system", content: systemPrompt },
     { role: "user", content: userMessage }
