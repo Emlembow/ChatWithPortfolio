@@ -122,6 +122,8 @@ content/
 - ✅ Secure with CSP headers
 - ✅ Accessible (WCAG compliant)
 
+Created by [Mike Lembo](https://myepicportfolio.com/). Mike's current portfolio uses a different stack; this repository is the Next.js template.
+
 ## License
 
 MIT License - Use freely for personal or commercial projects.
